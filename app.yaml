@@ -1,0 +1,53 @@
+application: arunjit-test
+version: angular-translate
+runtime: python27
+api_version: 1
+threadsafe: true
+
+libraries:
+- name: jinja2
+  version: "2.6"
+
+handlers:
+- url: /favicon.ico
+  static_files: app/images/favicon.ico
+  upload: app/images/favicon.ico
+
+- url: /css
+  static_dir: app/css
+
+- url: /images
+  static_dir: app/images
+
+- url: /jslib  # development only!
+  static_dir: app/components
+
+- url: /js
+  static_dir: app/js
+
+- url: /l10n
+  static_dir: app/l10n
+
+- url: /views
+  static_dir: app/views
+
+- url: /-stats.*
+  script: google.appengine.ext.appstats.ui.app
+  login: admin
+
+- url: .*
+  script: main.app
+
+skip_files:
+- ^(.*/)?app\.yaml
+- ^(.*/)?app\.yml
+- ^(.*/)?index\.yaml
+- ^(.*/)?index\.yml
+- ^(.*/)?#.*#
+- ^(.*/)?.*~
+- ^(.*/)?.*\.py[co]
+- ^(.*/)?.*_(unit)?test\.(py|js|html)
+- ^(.*/)?.*test(only|data).*
+- ^(.*/)?.*/RCS/.*
+- ^(.*/)?[\.+-].*
+- ^(.*/)?\.git

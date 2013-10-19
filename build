@@ -1,0 +1,109 @@
+#! /bin/sh
+
+# The dev_appserver.py and appcfg.py scripts. Can be overriden.
+: ${DEVAPPSERVER:=$PYAE/dev_appserver.py}
+: ${APPCFG:=$PYAE/appcfg.py}
+
+readonly CMD=$1
+
+# Utils
+INFO() {
+  echo -e "\e[0;32mINFO: \e[0m" $@
+}
+
+WARN() {
+  echo -e "\e[0;33mWARN: \e[0m" $@
+}
+
+DONE() {
+  INFO "Done."
+  exit $?
+}
+
+
+if [[ $CMD == "run" ]]; then
+  INFO "Running local server in dev mode..."
+  $DEVAPPSERVER .
+  DONE
+fi
+
+readonly APP="app"
+readonly DIST="dist"
+readonly DISTAPP="$DIST/$APP"
+readonly DISTJS="$DISTAPP/js"
+readonly COMPONENTS="$APP/components"
+readonly LANGUAGES=("de-de en-us fr-fr")
+
+INFO "Building..."
+
+# Output directory
+[ -d $DIST ] && rm -rf $DIST
+mkdir -p $DISTJS
+
+# AngularJS
+cp $COMPONENTS/angular/angular.min.js $DISTJS/
+
+# Angular-Translate
+cat $COMPONENTS/angular-translate/angular-translate.min.js \
+    $COMPONENTS/angular-translate-storage-local/angular-translate-storage-local.min.js \
+    > $DISTJS/angular-translate.min.js
+
+# Locales
+for lang in $LANGUAGES; do
+  pushd $APP/l10n > /dev/null
+  python genjs.py $lang
+  popd > /dev/null
+  nglocale="$COMPONENTS/angular-i18n/angular-locale_${lang}.js"
+  translations="$APP/l10n/locale_${lang}.js"
+  if [[ ! -f $nglocale && ! -f $translations ]]; then
+    WARN "No angular locale or translations for $lang"
+    continue
+  fi
+  outfile=$DISTJS/locale_${lang}.js
+  echo "" > $outfile
+  if [[ -f $nglocale ]]; then
+    cat $nglocale >> $outfile
+  else
+    WARN "No angular locale for $lang"
+  fi
+  if [[ -f $translations ]]; then
+    cat $translations >> $outfile
+    rm $translations
+  else
+    WARN "No translations for $lang"
+  fi
+  # tmpfile=/tmp/$lang.js
+  # uglifyjs $outfile > $tmpfile
+  # mv $tmpfile $outfile
+done
+
+# App JS
+readonly APPJS="$DISTJS/app.js"
+echo '"use strict";' > $APPJS
+cat $APP/js/dev-main.js >> $APPJS
+find $APP/js -name "*.js" | grep -v "dev-" | xargs cat >> $APPJS
+
+# Static files
+[ -d $APP/css ] && cp -r $APP/css $DISTAPP/
+[ -d $APP/images ] && cp -r $APP/images $DISTAPP/
+
+# Python application files
+cp -r templates $DIST/
+cp -r server $DIST/
+cp *.py $DIST/
+cp app.yaml $DIST/
+
+if [[ $CMD == "runprod" ]]; then
+  INFO "Running local server in prod mode..."
+  touch $DIST/FAKEPROD
+  $DEVAPPSERVER $DIST/
+  DONE
+fi
+
+if [[ $CMD == "deploy" ]]; then
+  INFO "Deploying application to App Engine..."
+  $APPCFG update --oauth2 $DIST
+  DONE
+fi
+
+DONE

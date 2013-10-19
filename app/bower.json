@@ -1,0 +1,25 @@
+{
+  "name": "web-l10n",
+  "version": "0.0.0",
+  "authors": [
+    "Arunjit Singh <opensrc@ajsd.in>"
+  ],
+  "description": "L10n in web-apps",
+  "main": "index.html",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-translate-loader-static-files": "~0.1.5",
+    "angular-i18n": "~1.0.8",
+    "angular": "~1.0.8",
+    "angular-translate": "~1.1.0",
+    "angular-translate-storage-local": "~0.1.5"
+  }
+}

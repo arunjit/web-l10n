@@ -1,0 +1,13 @@
+{% macro js_src(src) -%}
+  <script src="{{ src }}" type="text/javascript"></script>
+{%- endmacro %}
+
+{% macro js_srcs(srcs) -%}
+  {% for src in srcs -%}
+  {{ js_src(src) }}
+  {%- endfor %}
+{%- endmacro %}
+
+{% macro css_src(src, media='screen,projection') -%}
+  <link rel="stylesheet" type="text/css" href="{{ src }}" media="{{ media }}">
+{%- endmacro %}

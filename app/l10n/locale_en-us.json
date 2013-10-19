@@ -1,0 +1,8 @@
+{
+  "ENGLISH": "English",
+  "GERMAN": "German",
+  "FRENCH": "French",
+  "NAME": "Name",
+  "PASSWORD": "Password",
+  "LOGIN_BTN": "Login as {{name}}"
+}
