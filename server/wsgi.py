@@ -90,14 +90,16 @@ class RequestHandler(webapp2.RequestHandler):
     self.response.write(data)
     return self
 
+
   ## i18n
 
   def GetLocale(self):
-    if 'hl' in self.session:
-      return self.session['hl']
+    # Host language override
+    hl = str(self.request.get(config.LOCALE_PARAM, ''))
+    if hl and 'hl' in self.session and self.session['hl'] == hl:
+      return hl
 
-    languages = (self.request.get(config.LOCALE_PARAM, '') or
-                 self.request.header['Accept-Language'] or '')
+    languages = str(hl or self.request.headers['Accept-Language'] or '')
     locale = langutil.GetBestMatch(
       languages, config.AVAILABLE_LOCALES, default=config.DEFAULT_LOCALE)
 
