@@ -1,7 +1,6 @@
 # Copyright 2013 Arunjit Singh. All Rights Reserved.
 
 """Base WSGI, with templates, sessions, RequestHandler, JSON and users."""
-from server import config
 
 __author__ = 'arunjitsingh'
 
@@ -13,6 +12,9 @@ import webapp2
 from webapp2_extras import jinja2
 from webapp2_extras import sessions
 from webapp2_extras.appengine import sessions_memcache
+
+from server import config
+from server import langutil
 
 
 JSON_XSSI_PREFIX = ')]}\',\n'
@@ -91,10 +93,16 @@ class RequestHandler(webapp2.RequestHandler):
   ## i18n
 
   def GetLocale(self):
-    locale = self.request.get(config.LOCALE_PARAM, '').replace('_', '-')
-    if locale in config.AVAILABLE_LOCALES:
-      return locale
-    return config.DEFAULT_LOCALE
+    if 'hl' in self.session:
+      return self.session['hl']
+
+    languages = (self.request.get(config.LOCALE_PARAM, '') or
+                 self.request.header['Accept-Language'] or '')
+    locale = langutil.GetBestMatch(
+      languages, config.AVAILABLE_LOCALES, default=config.DEFAULT_LOCALE)
+
+    self.session['hl'] = locale
+    return locale
 
 
   ## Sessions
